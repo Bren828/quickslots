@@ -37,6 +37,7 @@ CMD:test(playerid) {
     return 1;
 }
 
+// Called when the textdraw is clicked.
 forward OnPlayerClickQuickSlot(playerid, slot, modelid, itemCount, extraValue);
 public OnPlayerClickQuickSlot(playerid, slot, modelid, itemCount, extraValue) {
 
