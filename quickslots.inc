@@ -5,14 +5,14 @@
 *   ---------------------------------------------------
 *
 *	Creater - @Bren828 					
-*									27 November 2023
+*									14 April 2026
 *
-*   Version: 1.0
+*   Version: 1.1
 *
 *   ---------------------------------------------------
 *
 *
-*	https://github.com/Bren828/quickslots
+*	https://github.com/Bren828/quickSlots
 *
 *
 *
@@ -29,245 +29,299 @@
 #endif
 
 
-#if !defined QS_TD_POSITION_X
-    #define QS_TD_POSITION_X 321.0
+#if !defined QS_POSITION_X
+    #define QS_POSITION_X 321.0
 #endif
 
-#if !defined QS_TD_POSITION_Y
-    #define QS_TD_POSITION_Y 400.0
+#if !defined QS_POSITION_Y
+    #define QS_POSITION_Y 400.0
 #endif
 
-#if !defined QS_TD_INDENT_X
-    #define QS_TD_INDENT_X 32.0
-#endif
-
-
-#if !defined QS_TD_FON_COLOR_BACK
-    #define QS_TD_FON_COLOR_BACK 0x00000077
-#endif
-
-#if !defined QS_TD_FON_COLOR_MAIN
-    #define QS_TD_FON_COLOR_MAIN 0x32323288
-#endif
-
-#if !defined QS_TD_FON_COLOR_SELECTED
-    #define QS_TD_FON_COLOR_SELECTED 0x626262AA
-#endif
-
-#if !defined QS_TD_COLOR_VALUE
-    #define QS_TD_COLOR_VALUE 0xFFFFFFFF
+#if !defined QS_INDENT_X
+    #define QS_INDENT_X 32.0
 #endif
 
 
+#if !defined QS_COLOR_BACKGROUND
+    #define QS_COLOR_BACKGROUND 0x00000077
+#endif
 
-enum QUICKSLOTS_EN
-{
-    bool:qs_Show,
+#if !defined QS_COLOR_FOREGROUND
+    #define QS_COLOR_FOREGROUND 0x32323288
+#endif
+
+#if !defined QS_COLOR_SELECTED
+    #define QS_COLOR_SELECTED 0x626262AA
+#endif
+
+#if !defined QS_TEXT_COLOR_VALUE
+    #define QS_TEXT_COLOR_VALUE 0xFFFFFFFF
+#endif
+
+
+
+enum E_QUICK_SLOTS {
+    bool:qs_IsVisible,
     qs_SelectedSlot,
 
-    qs_Modelid[QS_MAX_SLOTS], 
-    Float:qs_fRotX[QS_MAX_SLOTS], 
-    Float:qs_fRotY[QS_MAX_SLOTS], 
-    Float:qs_fRotZ[QS_MAX_SLOTS], 
-    Float:qs_fZoom[QS_MAX_SLOTS],
-    qs_Value[QS_MAX_SLOTS],
-    qs_ExtraValue[QS_MAX_SLOTS],
+    qs_ModelID[QS_MAX_SLOTS], 
+    Float:qs_RotX[QS_MAX_SLOTS], 
+    Float:qs_RotY[QS_MAX_SLOTS], 
+    Float:qs_RotZ[QS_MAX_SLOTS], 
+    Float:qs_Zoom[QS_MAX_SLOTS],
+    qs_ItemCount[QS_MAX_SLOTS],
+    qs_Extra[QS_MAX_SLOTS],
 
-    PlayerText:qs_TD_FonBack[QS_MAX_SLOTS],
-    PlayerText:qs_TD_FonMain[QS_MAX_SLOTS],
-    PlayerText:qs_TD_FonValue[QS_MAX_SLOTS]
+    PlayerText:qs_TD_Background[QS_MAX_SLOTS],
+    PlayerText:qs_TD_Item[QS_MAX_SLOTS],
+    PlayerText:qs_TD_CountText[QS_MAX_SLOTS]
 }
-static quickslots[MAX_PLAYERS][QUICKSLOTS_EN];
-static const NULL_quickslots[QUICKSLOTS_EN];
+static quickSlots[MAX_PLAYERS][E_QUICK_SLOTS];
+static const NULL_quickslots[E_QUICK_SLOTS];
 
 
 
-stock ShowQuickSlots(playerid)
-{
-    if(quickslots[playerid][qs_Show] == true) return 0;
-    quickslots[playerid][qs_Show] = true;
+stock ShowQuickSlots(playerid) {
 
-    new Float:PosX = QS_TD_POSITION_X - ((QS_TD_INDENT_X * QS_MAX_SLOTS) * 50)/100, // get center
+    if(IsQuickSlotsVisible(playerid)) {
+        return 0;
+    }
+
+    quickSlots[playerid][qs_IsVisible] = true;
+
+    new Float:PosX = QS_POSITION_X - ((QS_INDENT_X * QS_MAX_SLOTS) * 50) / 100, // get center
         string[11];
 
-    for(new slot; slot < QS_MAX_SLOTS; slot ++)
-    {
-        quickslots[playerid][qs_TD_FonBack][slot] = PlayerText:INVALID_TEXT_DRAW;
-        quickslots[playerid][qs_TD_FonMain][slot] = PlayerText:INVALID_TEXT_DRAW;
-        quickslots[playerid][qs_TD_FonValue][slot] = PlayerText:INVALID_TEXT_DRAW;
+    for(new slot; slot < QS_MAX_SLOTS; slot ++) {
 
-        #if QS_TD_FON_COLOR_BACK != 0x00000000
-            quickslots[playerid][qs_TD_FonBack][slot] = CreatePlayerTextDraw(playerid, PosX+1.4, QS_TD_POSITION_Y+1.6, "_");
-            PlayerTextDrawLetterSize(playerid, quickslots[playerid][qs_TD_FonBack][slot], 0.0, 3.5);
-            PlayerTextDrawUseBox(playerid, quickslots[playerid][qs_TD_FonBack][slot], 1);
-            PlayerTextDrawTextSize(playerid, quickslots[playerid][qs_TD_FonBack][slot], PosX+28.4, 0.0);
-            PlayerTextDrawBoxColor(playerid, quickslots[playerid][qs_TD_FonBack][slot], QS_TD_FON_COLOR_BACK);
-            PlayerTextDrawShow(playerid, quickslots[playerid][qs_TD_FonBack][slot]);
+        quickSlots[playerid][qs_TD_Background][slot] = PlayerText:INVALID_TEXT_DRAW;
+        quickSlots[playerid][qs_TD_Item][slot] = PlayerText:INVALID_TEXT_DRAW;
+        quickSlots[playerid][qs_TD_CountText][slot] = PlayerText:INVALID_TEXT_DRAW;
+
+
+        #if QS_COLOR_BACKGROUND != 0x00000000
+            quickSlots[playerid][qs_TD_Background][slot] = CreatePlayerTextDraw(playerid, PosX + 1.4, QS_POSITION_Y + 1.6, "_");
+            PlayerTextDrawLetterSize(playerid, quickSlots[playerid][qs_TD_Background][slot], 0.0, 3.5);
+            PlayerTextDrawUseBox(playerid, quickSlots[playerid][qs_TD_Background][slot], 1);
+            PlayerTextDrawTextSize(playerid, quickSlots[playerid][qs_TD_Background][slot], PosX + 28.4, 0.0);
+            PlayerTextDrawBoxColor(playerid, quickSlots[playerid][qs_TD_Background][slot], QS_COLOR_BACKGROUND);
+            PlayerTextDrawShow(playerid, quickSlots[playerid][qs_TD_Background][slot]);
         #endif
 
-		quickslots[playerid][qs_TD_FonMain][slot] = CreatePlayerTextDraw(playerid, PosX + 0.5, QS_TD_POSITION_Y + 0.5, "_");
-        PlayerTextDrawBackgroundColor(playerid, quickslots[playerid][qs_TD_FonMain][slot], (quickslots[playerid][qs_SelectedSlot] == slot) ? (QS_TD_FON_COLOR_SELECTED):(QS_TD_FON_COLOR_MAIN) );
-        PlayerTextDrawFont(playerid, quickslots[playerid][qs_TD_FonMain][slot], 5);
-		PlayerTextDrawLetterSize(playerid, quickslots[playerid][qs_TD_FonMain][slot], 0.5000, 1.0000);
-		PlayerTextDrawColor(playerid, quickslots[playerid][qs_TD_FonMain][slot], 0xFFFFFFFF);
-		PlayerTextDrawUseBox(playerid, quickslots[playerid][qs_TD_FonMain][slot], 1);
-		PlayerTextDrawBoxColor(playerid, quickslots[playerid][qs_TD_FonMain][slot], 0x00000000);
-		PlayerTextDrawTextSize(playerid, quickslots[playerid][qs_TD_FonMain][slot], 28.7000, 33.8997);
-        PlayerTextDrawSetPreviewModel(playerid, quickslots[playerid][qs_TD_FonMain][slot], (quickslots[playerid][qs_Modelid][slot] == 0) ? (18691):(quickslots[playerid][qs_Modelid][slot]));
-        if(quickslots[playerid][qs_Modelid][slot] == 0) PlayerTextDrawSetPreviewRot(playerid, quickslots[playerid][qs_TD_FonMain][slot], 0.0, 0.0, 0.0, 0.0);
-        else PlayerTextDrawSetPreviewRot(playerid, quickslots[playerid][qs_TD_FonMain][slot], quickslots[playerid][qs_fRotX][slot], quickslots[playerid][qs_fRotY][slot], quickslots[playerid][qs_fRotZ][slot], quickslots[playerid][qs_fZoom][slot]);
-        PlayerTextDrawSetSelectable(playerid, quickslots[playerid][qs_TD_FonMain][slot], true);
-		PlayerTextDrawShow(playerid, quickslots[playerid][qs_TD_FonMain][slot]);
 
-        if(quickslots[playerid][qs_Value][slot] != 0) format(string, sizeof(string), "%d", quickslots[playerid][qs_Value][slot]);
-        else string = "_";
-        quickslots[playerid][qs_TD_FonValue][slot] = CreatePlayerTextDraw(playerid, PosX + 27.0, QS_TD_POSITION_Y + 26.0, string);
-        PlayerTextDrawAlignment(playerid, quickslots[playerid][qs_TD_FonValue][slot], 3);
-        PlayerTextDrawBackgroundColor(playerid, quickslots[playerid][qs_TD_FonValue][slot], 0x000000FF);
-        PlayerTextDrawFont(playerid, quickslots[playerid][qs_TD_FonValue][slot], 2);
-        PlayerTextDrawLetterSize(playerid, quickslots[playerid][qs_TD_FonValue][slot], 0.1400, 0.6499);
-        PlayerTextDrawColor(playerid, quickslots[playerid][qs_TD_FonValue][slot], QS_TD_COLOR_VALUE);
-        PlayerTextDrawSetProportional(playerid, quickslots[playerid][qs_TD_FonValue][slot], 1);
-        PlayerTextDrawSetShadow(playerid, quickslots[playerid][qs_TD_FonValue][slot], 0);
-        PlayerTextDrawShow(playerid, quickslots[playerid][qs_TD_FonValue][slot]);
-
-        PosX += QS_TD_INDENT_X;	
-    }
-
-    return 1;
-}
-
-
-stock HideQuickSlots(playerid)
-{
-    if(quickslots[playerid][qs_Show] == false) return 0;
-    quickslots[playerid][qs_Show] = false;
-
-    for(new slot; slot < QS_MAX_SLOTS; slot ++)
-    {
-        if(quickslots[playerid][qs_TD_FonBack][slot] != PlayerText:INVALID_TEXT_DRAW) PlayerTextDrawDestroy(playerid, quickslots[playerid][qs_TD_FonBack][slot]);
-        if(quickslots[playerid][qs_TD_FonMain][slot] != PlayerText:INVALID_TEXT_DRAW) PlayerTextDrawDestroy(playerid, quickslots[playerid][qs_TD_FonMain][slot]);
-        if(quickslots[playerid][qs_TD_FonValue][slot] != PlayerText:INVALID_TEXT_DRAW) PlayerTextDrawDestroy(playerid, quickslots[playerid][qs_TD_FonValue][slot]);
-
-        quickslots[playerid][qs_TD_FonBack][slot] = PlayerText:INVALID_TEXT_DRAW;
-        quickslots[playerid][qs_TD_FonMain][slot] = PlayerText:INVALID_TEXT_DRAW;
-        quickslots[playerid][qs_TD_FonValue][slot] = PlayerText:INVALID_TEXT_DRAW;
-    }
-
-    return 1;
-}
-
-
-stock IsPlayerShowQuickSlots(playerid)
-{
-    return quickslots[playerid][qs_Show];
-}
-
-
-stock SetQuickSlotModel(playerid, slot, modelid, Float:fRotX = 0.0, Float:fRotY = 0.0, Float:fRotZ = 0.0, Float:fZoom = 1.0, value = 0)
-{
-    if(slot < 0 || slot >= QS_MAX_SLOTS) return 0;
-
-    quickslots[playerid][qs_Modelid][slot] = modelid;
-    quickslots[playerid][qs_fRotX][slot] = (modelid != 0) ? (fRotX) : (0.0);
-    quickslots[playerid][qs_fRotY][slot] = (modelid != 0) ? (fRotY) : (0.0);
-    quickslots[playerid][qs_fRotZ][slot] = (modelid != 0) ? (fRotZ) : (0.0);
-    quickslots[playerid][qs_fZoom][slot] = (modelid != 0) ? (fZoom) : (0.0);
-    quickslots[playerid][qs_Value][slot] = value;
-
-    if(quickslots[playerid][qs_Show] == true) 
-    {
-        PlayerTextDrawSetPreviewModel(playerid, quickslots[playerid][qs_TD_FonMain][slot], (modelid != 0) ? (modelid):(18691));
-        PlayerTextDrawSetPreviewRot(playerid, quickslots[playerid][qs_TD_FonMain][slot], quickslots[playerid][qs_fRotX][slot], quickslots[playerid][qs_fRotY][slot], quickslots[playerid][qs_fRotZ][slot], quickslots[playerid][qs_fZoom][slot]);
-        PlayerTextDrawShow(playerid, quickslots[playerid][qs_TD_FonMain][slot]);
-
-        new string[11] = "_";
-        if(value != 0) format(string, sizeof(string), "%d", value);
-        PlayerTextDrawSetString(playerid, quickslots[playerid][qs_TD_FonValue][slot], string);
-    }
-
-    return 1;
-}
-
-
-stock GetQuickSlotModel(playerid, slot, &modelid, &Float:fRotX = 0.0, &Float:fRotY = 0.0, &Float:fRotZ = 0.0, &Float:fZoom = 0.0, &value = 0)
-{
-    if(slot < 0 || slot >= QS_MAX_SLOTS) return 0;
-
-    modelid = quickslots[playerid][qs_Modelid][slot];
-    fRotX = quickslots[playerid][qs_fRotX][slot];
-    fRotY = quickslots[playerid][qs_fRotY][slot];
-    fRotZ = quickslots[playerid][qs_fRotZ][slot];
-    fZoom = quickslots[playerid][qs_fZoom][slot];
-    value = quickslots[playerid][qs_Value][slot];
-
-    return 1;
-}
-
-
-stock SetQuickSlotValue(playerid, slot, value)
-{
-    if(slot < 0 || slot >= QS_MAX_SLOTS) return 0;
-
-    quickslots[playerid][qs_Value][slot] = value;
-
-    if(quickslots[playerid][qs_Show] == true) 
-    {
-        new string[11] = "_";
-        if(value != 0) format(string, sizeof(string), "%d", value);
-        PlayerTextDrawSetString(playerid, quickslots[playerid][qs_TD_FonValue][slot], string);
-    }
-
-    return 1;
-}
-
-
-stock GetQuickSlotValue(playerid, slot)
-{
-    if(slot < 0 || slot >= QS_MAX_SLOTS) return 0;
-
-    return quickslots[playerid][qs_Value][slot];
-}
-
-
-stock SetQuickSlotExtraValue(playerid, slot, value)
-{
-    if(slot < 0 || slot >= QS_MAX_SLOTS) return 0;
-
-    quickslots[playerid][qs_ExtraValue][slot] = value;
-    return 1;
-}
-
-
-stock GetQuickSlotExtraValue(playerid)
-{
-    if(slot < 0 || slot >= QS_MAX_SLOTS) return 0;
-
-    return quickslots[playerid][qs_ExtraValue][slot];
-}
-
-
-stock SetQuickSlotSelected(playerid, slot)
-{
-    if(slot < 0 || slot >= QS_MAX_SLOTS || quickslots[playerid][qs_SelectedSlot] == slot) return 0;
-
-    if(quickslots[playerid][qs_Show] == true) 
-    {
-        PlayerTextDrawBackgroundColor(playerid, quickslots[playerid][qs_TD_FonMain][quickslots[playerid][qs_SelectedSlot]], QS_TD_FON_COLOR_MAIN);
-        PlayerTextDrawShow(playerid, quickslots[playerid][qs_TD_FonMain][quickslots[playerid][qs_SelectedSlot]]);
+		quickSlots[playerid][qs_TD_Item][slot] = CreatePlayerTextDraw(playerid, PosX + 0.5, QS_POSITION_Y + 0.5, "_");
+        PlayerTextDrawBackgroundColor(playerid, quickSlots[playerid][qs_TD_Item][slot], 
+            (quickSlots[playerid][qs_SelectedSlot] == slot) ? (QS_COLOR_SELECTED) : (QS_COLOR_FOREGROUND) );
         
-        PlayerTextDrawBackgroundColor(playerid, quickslots[playerid][qs_TD_FonMain][slot], QS_TD_FON_COLOR_SELECTED);
-        PlayerTextDrawShow(playerid, quickslots[playerid][qs_TD_FonMain][slot]);
+        PlayerTextDrawFont(playerid, quickSlots[playerid][qs_TD_Item][slot], 5);
+		PlayerTextDrawLetterSize(playerid, quickSlots[playerid][qs_TD_Item][slot], 0.5000, 1.0000);
+		PlayerTextDrawColor(playerid, quickSlots[playerid][qs_TD_Item][slot], 0xFFFFFFFF);
+		PlayerTextDrawUseBox(playerid, quickSlots[playerid][qs_TD_Item][slot], 1);
+		PlayerTextDrawBoxColor(playerid, quickSlots[playerid][qs_TD_Item][slot], 0x00000000);
+		PlayerTextDrawTextSize(playerid, quickSlots[playerid][qs_TD_Item][slot], 28.7000, 33.8997);
+        PlayerTextDrawSetPreviewModel(playerid, quickSlots[playerid][qs_TD_Item][slot], 
+            (quickSlots[playerid][qs_ModelID][slot] == 0) ? (18691) : (quickSlots[playerid][qs_ModelID][slot]));
+        
+        if(quickSlots[playerid][qs_ModelID][slot] == 0) {
+            PlayerTextDrawSetPreviewRot(playerid, quickSlots[playerid][qs_TD_Item][slot], 0.0, 0.0, 0.0, 0.0);
+        }
+        else {
+            PlayerTextDrawSetPreviewRot(playerid, quickSlots[playerid][qs_TD_Item][slot], 
+                quickSlots[playerid][qs_RotX][slot], 
+                quickSlots[playerid][qs_RotY][slot], 
+                quickSlots[playerid][qs_RotZ][slot], 
+                quickSlots[playerid][qs_Zoom][slot]);
+        }
+        PlayerTextDrawSetSelectable(playerid, quickSlots[playerid][qs_TD_Item][slot], true);
+		PlayerTextDrawShow(playerid, quickSlots[playerid][qs_TD_Item][slot]);
+
+
+        if(quickSlots[playerid][qs_ItemCount][slot] != 0) {
+            format(string, sizeof(string), "%d", quickSlots[playerid][qs_ItemCount][slot]);
+        }
+        else {
+            string = "_";
+        }
+        
+        quickSlots[playerid][qs_TD_CountText][slot] = CreatePlayerTextDraw(playerid, PosX + 27.0, QS_POSITION_Y + 26.0, string);
+        PlayerTextDrawAlignment(playerid, quickSlots[playerid][qs_TD_CountText][slot], 3);
+        PlayerTextDrawBackgroundColor(playerid, quickSlots[playerid][qs_TD_CountText][slot], 0x000000FF);
+        PlayerTextDrawFont(playerid, quickSlots[playerid][qs_TD_CountText][slot], 2);
+        PlayerTextDrawLetterSize(playerid, quickSlots[playerid][qs_TD_CountText][slot], 0.1400, 0.6499);
+        PlayerTextDrawColor(playerid, quickSlots[playerid][qs_TD_CountText][slot], QS_TEXT_COLOR_VALUE);
+        PlayerTextDrawSetProportional(playerid, quickSlots[playerid][qs_TD_CountText][slot], 1);
+        PlayerTextDrawSetShadow(playerid, quickSlots[playerid][qs_TD_CountText][slot], 0);
+        PlayerTextDrawShow(playerid, quickSlots[playerid][qs_TD_CountText][slot]);
+
+        PosX += QS_INDENT_X;	
     }
 
-    quickslots[playerid][qs_SelectedSlot] = slot;
     return 1;
 }
 
 
-stock GetQuickSlotSelected(playerid)
-{
-    return quickslots[playerid][qs_SelectedSlot];
+stock HideQuickSlots(playerid) {
+
+    if(!IsQuickSlotsVisible(playerid)) {
+        return 0;
+    }
+    quickSlots[playerid][qs_IsVisible] = false;
+
+    for(new slot; slot < QS_MAX_SLOTS; slot ++) {
+
+        if(quickSlots[playerid][qs_TD_Background][slot] != PlayerText:INVALID_TEXT_DRAW) {
+            PlayerTextDrawDestroy(playerid, quickSlots[playerid][qs_TD_Background][slot]);
+            quickSlots[playerid][qs_TD_Background][slot] = PlayerText:INVALID_TEXT_DRAW;
+        }
+
+        if(quickSlots[playerid][qs_TD_Item][slot] != PlayerText:INVALID_TEXT_DRAW) {
+            PlayerTextDrawDestroy(playerid, quickSlots[playerid][qs_TD_Item][slot]);
+            quickSlots[playerid][qs_TD_Item][slot] = PlayerText:INVALID_TEXT_DRAW;
+        }
+
+        if(quickSlots[playerid][qs_TD_CountText][slot] != PlayerText:INVALID_TEXT_DRAW) {
+            PlayerTextDrawDestroy(playerid, quickSlots[playerid][qs_TD_CountText][slot]);
+            quickSlots[playerid][qs_TD_CountText][slot] = PlayerText:INVALID_TEXT_DRAW;
+        }
+    }
+    return 1;
+}
+
+
+stock IsQuickSlotsVisible(playerid) {
+    return quickSlots[playerid][qs_IsVisible];
+}
+
+
+stock SetQuickSlotModel(playerid, slot, modelid, Float:rotX = 0.0, Float:rotY = 0.0, Float:rotZ = 0.0, Float:zoom = 1.0, itemCount = 0) {
+
+    if(slot < 0 || slot >= QS_MAX_SLOTS) {
+        return 0;
+    }
+
+    quickSlots[playerid][qs_ModelID][slot] = modelid;
+    quickSlots[playerid][qs_RotX][slot] = (modelid != 0) ? (rotX) : (0.0);
+    quickSlots[playerid][qs_RotY][slot] = (modelid != 0) ? (rotY) : (0.0);
+    quickSlots[playerid][qs_RotZ][slot] = (modelid != 0) ? (rotZ) : (0.0);
+    quickSlots[playerid][qs_Zoom][slot] = (modelid != 0) ? (zoom) : (0.0);
+    quickSlots[playerid][qs_ItemCount][slot] = itemCount;
+
+    if(IsQuickSlotsVisible(playerid)) {
+
+        PlayerTextDrawSetPreviewModel(playerid, quickSlots[playerid][qs_TD_Item][slot], (modelid != 0) ? (modelid) : (18691));
+        PlayerTextDrawSetPreviewRot(playerid, quickSlots[playerid][qs_TD_Item][slot], 
+            quickSlots[playerid][qs_RotX][slot], 
+            quickSlots[playerid][qs_RotY][slot], 
+            quickSlots[playerid][qs_RotZ][slot], 
+            quickSlots[playerid][qs_Zoom][slot]);
+
+        PlayerTextDrawShow(playerid, quickSlots[playerid][qs_TD_Item][slot]);
+
+        new string[11] = "_";
+        if(itemCount != 0) {
+            format(string, sizeof(string), "%d", itemCount);
+        }
+        PlayerTextDrawSetString(playerid, quickSlots[playerid][qs_TD_CountText][slot], string);
+    }
+
+    return 1;
+}
+
+
+stock GetQuickSlotModel(playerid, slot, &modelid, &Float:rotX = 0.0, &Float:rotY = 0.0, &Float:rotZ = 0.0, &Float:zoom = 0.0, &itemCount = 0) {
+
+    if(slot < 0 || slot >= QS_MAX_SLOTS) {
+        return 0;
+    }
+
+    modelid = quickSlots[playerid][qs_ModelID][slot];
+    rotX = quickSlots[playerid][qs_RotX][slot];
+    rotY = quickSlots[playerid][qs_RotY][slot];
+    rotZ = quickSlots[playerid][qs_RotZ][slot];
+    zoom = quickSlots[playerid][qs_Zoom][slot];
+    itemCount = quickSlots[playerid][qs_ItemCount][slot];
+
+    return 1;
+}
+
+
+stock SetQuickSlotItemCount(playerid, slot, itemCount) {
+
+    if(slot < 0 || slot >= QS_MAX_SLOTS) {
+        return 0;
+    }
+
+    quickSlots[playerid][qs_ItemCount][slot] = itemCount;
+
+    if(IsQuickSlotsVisible(playerid)) {
+        new string[11] = "_";
+
+        if(itemCount != 0) {
+            format(string, sizeof(string), "%d", itemCount);
+        }
+        PlayerTextDrawSetString(playerid, quickSlots[playerid][qs_TD_CountText][slot], string);
+    }
+
+    return 1;
+}
+
+
+stock GetQuickSlotItemCount(playerid, slot) {
+
+    if(slot < 0 || slot >= QS_MAX_SLOTS) {
+        return 0;
+    }
+
+    return quickSlots[playerid][qs_ItemCount][slot];
+}
+
+
+stock SetQuickSlotExtraValue(playerid, slot, value) {
+
+    if(slot < 0 || slot >= QS_MAX_SLOTS) {
+        return 0;
+    }
+
+    quickSlots[playerid][qs_Extra][slot] = value;
+    return 1;
+}
+
+
+stock GetQuickSlotExtraValue(playerid, slot) {
+
+    if(slot < 0 || slot >= QS_MAX_SLOTS) {
+        return 0;
+    }
+
+    return quickSlots[playerid][qs_Extra][slot];
+}
+
+
+stock SetQuickSlotSelected(playerid, slot) {
+
+    if(slot < 0 || slot >= QS_MAX_SLOTS) {
+        return 0;
+    }
+
+    if(quickSlots[playerid][qs_SelectedSlot] == slot) {
+        return 0;
+    }
+
+    if(IsQuickSlotsVisible(playerid)) {
+        PlayerTextDrawBackgroundColor(playerid, quickSlots[playerid][qs_TD_Item][quickSlots[playerid][qs_SelectedSlot]], QS_COLOR_FOREGROUND);
+        PlayerTextDrawShow(playerid, quickSlots[playerid][qs_TD_Item][quickSlots[playerid][qs_SelectedSlot]]);
+        
+        PlayerTextDrawBackgroundColor(playerid, quickSlots[playerid][qs_TD_Item][slot], QS_COLOR_SELECTED);
+        PlayerTextDrawShow(playerid, quickSlots[playerid][qs_TD_Item][slot]);
+    }
+
+    quickSlots[playerid][qs_SelectedSlot] = slot;
+    return 1;
+}
+
+
+stock GetQuickSlotSelected(playerid) {
+    return quickSlots[playerid][qs_SelectedSlot];
 }
 
 
@@ -278,12 +332,13 @@ stock GetQuickSlotSelected(playerid)
 	public OnPlayerConnect(playerid)
 #endif
 {
-    quickslots[playerid] = NULL_quickslots;
+    quickSlots[playerid] = NULL_quickslots;
 
-	#if !defined _inc_y_hooks && !defined _INC_y_hooks && defined OnPlayerConnect_Quickslots
-        OnPlayerConnect_Quickslots(playerid);
+	#if !defined _inc_y_hooks && !defined _INC_y_hooks && defined OnPlayerConnect_QS
+        return OnPlayerConnect_QS(playerid);
+    #else 
+        return 1;
     #endif
-    return 1;
 }
 
 #if !defined _inc_y_hooks && !defined _INC_y_hooks
@@ -292,10 +347,10 @@ stock GetQuickSlotSelected(playerid)
 	#else
 		#define _ALS_OnPlayerConnect
 	#endif
-	#define OnPlayerConnect OnPlayerConnect_Quickslots
+	#define OnPlayerConnect OnPlayerConnect_QS
 
-	#if defined OnPlayerConnect_Quickslots
-		forward OnPlayerConnect_Quickslots(playerid);
+	#if defined OnPlayerConnect_QS
+		forward OnPlayerConnect_QS(playerid);
 	#endif
 #endif
 
@@ -307,23 +362,30 @@ stock GetQuickSlotSelected(playerid)
 	public OnPlayerClickPlayerTextDraw(playerid, PlayerText:playertextid)
 #endif
 {
-    if(quickslots[playerid][qs_Show] == true) 
-    {
-        for(new slot; slot < QS_MAX_SLOTS; slot ++)
-        {
-            if(playertextid != quickslots[playerid][qs_TD_FonMain][slot]) continue;
+    if(IsQuickSlotsVisible(playerid)) {
 
-            #if defined OnPlayerQuickSlotSelected
-                OnPlayerQuickSlotSelected(playerid, slot, quickslots[playerid][qs_Modelid][slot], quickslots[playerid][qs_Value][slot], quickslots[playerid][qs_ExtraValue][slot]);
+        for(new slot; slot < QS_MAX_SLOTS; slot ++) {
+
+            if(playertextid != quickSlots[playerid][qs_TD_Item][slot]) {
+                continue;
+            }
+
+            #if defined OnPlayerClickQuickSlot
+                OnPlayerClickQuickSlot(playerid, 
+                    slot, 
+                    quickSlots[playerid][qs_ModelID][slot], 
+                    quickSlots[playerid][qs_ItemCount][slot], 
+                    quickSlots[playerid][qs_Extra][slot]);
             #endif
             return 1;
         }
     }
 
     #if !defined _inc_y_hooks && !defined _INC_y_hooks && defined OnPlayerClickPlayerTextDraw_QS
-        OnPlayerClickPlayerTextDraw_QS(playerid, playertextid);
+        return OnPlayerClickPlayerTextDraw_QS(playerid, playertextid);
+    #else 
+        return 1;
     #endif
-    return 1;
 }
 
 #if !defined _inc_y_hooks && !defined _INC_y_hooks
