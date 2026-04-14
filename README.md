@@ -69,7 +69,6 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
     
         if(!IsQuickSlotsVisible(playerid)) {
 			ShowQuickSlots(playerid);
-			SelectTextDraw(playerid, -1);
 		}
 		else {
 			HideQuickSlots(playerid);
